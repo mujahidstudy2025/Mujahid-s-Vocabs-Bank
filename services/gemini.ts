@@ -69,35 +69,3 @@ export const fetchWordDetails = async (word: string): Promise<WordData> => {
   return JSON.parse(text) as WordData;
 };
 
-export const generateWordImage = async (word: string, definition: string): Promise<string | null> => {
-  try {
-    const ai = getClient();
-    const model = "gemini-2.5-flash-image";
-    const prompt = `A creative, minimalist, and educational vector-style illustration representing the concept of the word: "${word}". 
-    Context: ${definition}. 
-    Style: Modern, flat design, colorful but professional, suitable for a dictionary app. No text inside the image.`;
-
-    const response = await ai.models.generateContent({
-      model,
-      contents: prompt,
-      config: {
-        // No responseMimeType for image generation models usually, but we check parts
-      }
-    });
-
-    // Iterate through parts to find the image
-    const candidates = response.candidates;
-    if (candidates && candidates.length > 0 && candidates[0].content && candidates[0].content.parts) {
-      for (const part of candidates[0].content.parts) {
-        if (part.inlineData && part.inlineData.data) {
-          const mimeType = part.inlineData.mimeType || 'image/png';
-          return `data:${mimeType};base64,${part.inlineData.data}`;
-        }
-      }
-    }
-    return null;
-  } catch (error) {
-    console.error("Failed to generate image:", error);
-    return null;
-  }
-};

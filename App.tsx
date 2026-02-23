@@ -2,27 +2,22 @@ import React, { useState } from 'react';
 import { Sparkles, BrainCircuit } from 'lucide-react';
 import SearchInput from './components/SearchInput';
 import WordDisplay from './components/WordDisplay';
-import ImageVisualizer from './components/ImageVisualizer';
 import SynonymsAntonyms from './components/SynonymsAntonyms';
 import Derivatives from './components/Derivatives';
 import Examples from './components/Examples';
-import { fetchWordDetails, generateWordImage } from './services/gemini';
+import { fetchWordDetails } from './services/gemini';
 import { WordData } from './types';
 
 const App: React.FC = () => {
   const [loading, setLoading] = useState(false);
-  const [imageLoading, setImageLoading] = useState(false);
   const [data, setData] = useState<WordData | null>(null);
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [searchedWord, setSearchedWord] = useState<string>('');
 
   const handleSearch = async (term: string) => {
     setLoading(true);
-    setImageLoading(true);
     setError(null);
     setData(null);
-    setImageUrl(null);
     setSearchedWord(term);
 
     try {
@@ -30,19 +25,11 @@ const App: React.FC = () => {
       const wordData = await fetchWordDetails(term);
       setData(wordData);
       setLoading(false);
-
-      // 2. Fetch Image Data (Parallel-ish but dependent on word meaning for better prompt)
-      if (wordData) {
-        const generatedImage = await generateWordImage(wordData.word, wordData.definition);
-        setImageUrl(generatedImage);
-      }
     } catch (err: any) {
       console.error(err);
       // Show the specific error message (like "API Key is missing")
       setError(err.message || "Failed to fetch word details. Please try again.");
       setLoading(false);
-    } finally {
-      setImageLoading(false);
     }
   };
 
@@ -61,7 +48,7 @@ const App: React.FC = () => {
             </div>
           </div>
           <div className="hidden sm:block">
-            <span className="px-3 py-1 bg-slate-100 border border-slate-200 rounded-lg text-xs font-mono text-slate-500">v2.0 3D-Edition</span>
+            <span className="px-3 py-1 bg-slate-100 border border-slate-200 rounded-lg text-xs font-mono text-slate-500">v2.1 Fast-Edition</span>
           </div>
         </div>
       </div>
@@ -77,7 +64,7 @@ const App: React.FC = () => {
             Master <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-500">Any Word</span>
           </h2>
           <p className="text-slate-600 mb-10 max-w-xl mx-auto text-lg font-medium leading-relaxed">
-            Unlock deep meanings, visuals, and contexts with our smart AI engine.
+            Unlock deep meanings and contexts with our smart AI engine.
           </p>
           <SearchInput onSearch={handleSearch} isLoading={loading} />
         </div>
@@ -97,8 +84,7 @@ const App: React.FC = () => {
         {/* Loading Skeleton */}
         {loading && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-pulse">
-            <div className="lg:col-span-7 h-80 bg-slate-200 rounded-3xl"></div>
-            <div className="lg:col-span-5 h-80 bg-slate-200 rounded-3xl"></div>
+            <div className="lg:col-span-12 h-80 bg-slate-200 rounded-3xl"></div>
             <div className="lg:col-span-12 h-48 bg-slate-200 rounded-3xl"></div>
           </div>
         )}
@@ -106,18 +92,9 @@ const App: React.FC = () => {
         {/* Results View */}
         {!loading && data && (
           <div className="space-y-8">
-            {/* Top Row: Definition & Visualization */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-              <div className="lg:col-span-7 flex flex-col">
-                <WordDisplay data={data} />
-              </div>
-              <div className="lg:col-span-5 flex flex-col">
-                <ImageVisualizer 
-                  imageUrl={imageUrl} 
-                  isLoading={imageLoading} 
-                  word={data.word} 
-                />
-              </div>
+            {/* Top Row: Definition */}
+            <div className="w-full">
+              <WordDisplay data={data} />
             </div>
 
             {/* Middle Row: Synonyms & Antonyms */}
