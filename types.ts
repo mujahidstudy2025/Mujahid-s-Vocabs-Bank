@@ -6,6 +6,13 @@ export interface WordData {
   synonyms: string[];
   antonyms: string[];
   examples: string[];
+  derivatives?: {
+    base: string;
+    noun: string;
+    verb: string;
+    adjective: string;
+    adverb: string;
+  };
 }
 
 export interface SearchState {

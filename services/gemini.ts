@@ -21,7 +21,8 @@ export const fetchWordDetails = async (word: string): Promise<WordData> => {
     contents: `Analyze the word "${word}" thoroughly. 
     Provide the part of speech, a clear English definition, the meaning in Bengali (Bangla), 
     a list of synonyms (max 5), a list of antonyms (max 5, if applicable), 
-    and 3 distinct sentence examples showing how the word is used in context.`,
+    3 distinct sentence examples showing how the word is used in context,
+    and the derivative forms of the word (base, noun, verb, adjective, adverb). If a form doesn't exist, use "N/A".`,
     config: {
       responseMimeType: "application/json",
       responseSchema: {
@@ -42,9 +43,20 @@ export const fetchWordDetails = async (word: string): Promise<WordData> => {
           examples: { 
             type: Type.ARRAY, 
             items: { type: Type.STRING } 
+          },
+          derivatives: {
+            type: Type.OBJECT,
+            properties: {
+              base: { type: Type.STRING },
+              noun: { type: Type.STRING },
+              verb: { type: Type.STRING },
+              adjective: { type: Type.STRING },
+              adverb: { type: Type.STRING }
+            },
+            required: ["base", "noun", "verb", "adjective", "adverb"]
           }
         },
-        required: ["word", "partOfSpeech", "definition", "bengaliDefinition", "synonyms", "examples"],
+        required: ["word", "partOfSpeech", "definition", "bengaliDefinition", "synonyms", "examples", "derivatives"],
       }
     }
   });

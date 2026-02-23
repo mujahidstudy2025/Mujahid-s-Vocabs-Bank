@@ -4,6 +4,7 @@ import SearchInput from './components/SearchInput';
 import WordDisplay from './components/WordDisplay';
 import ImageVisualizer from './components/ImageVisualizer';
 import SynonymsAntonyms from './components/SynonymsAntonyms';
+import Derivatives from './components/Derivatives';
 import Examples from './components/Examples';
 import { fetchWordDetails, generateWordImage } from './services/gemini';
 import { WordData } from './types';
@@ -122,6 +123,11 @@ const App: React.FC = () => {
             {/* Middle Row: Synonyms & Antonyms */}
             <div className="w-full">
               <SynonymsAntonyms synonyms={data.synonyms} antonyms={data.antonyms} />
+            </div>
+
+            {/* Derivatives Row */}
+            <div className="w-full">
+              <Derivatives derivatives={data.derivatives} />
             </div>
 
             {/* Bottom Row: Examples */}

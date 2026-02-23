@@ -8,7 +8,7 @@ export default defineConfig(({ mode }) => {
     define: {
       // Stringify the API key to inject it into the code during build
       // Use fallback empty string to prevent "undefined" being injected which can cause runtime errors
-      'process.env.API_KEY': JSON.stringify(env.API_KEY || ''),
+      'process.env.API_KEY': JSON.stringify(env.API_KEY || env.GEMINI_API_KEY || ''),
     },
     server: {
       host: true
