@@ -4,8 +4,8 @@ import { WordData } from "../types";
 // We initialize the client lazily inside functions to prevent the application from crashing
 // immediately on load if the API key is missing or invalid.
 const getClient = () => {
-  // process.env.API_KEY is replaced by Vite at build time
-  const apiKey = process.env.API_KEY;
+  // process.env.GEMINI_API_KEY is replaced by Vite at build time
+  const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error("API Key is missing. Please check your environment variables.");
   }
