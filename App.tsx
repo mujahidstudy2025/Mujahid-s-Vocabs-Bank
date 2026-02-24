@@ -149,8 +149,8 @@ const App: React.FC = () => {
 
             {/* Right Column: Synonyms, Antonyms & Derivatives */}
             <div className="space-y-6">
-              <SynonymsAntonyms synonyms={data.synonyms} antonyms={data.antonyms} />
               <Derivatives derivatives={data.derivatives} />
+              <SynonymsAntonyms synonyms={data.synonyms} antonyms={data.antonyms} />
             </div>
           </div>
         )}
