@@ -62,6 +62,37 @@ export const fetchWordDetails = async (word: string): Promise<WordData> => {
       });
     });
 
+    // Bengali definition and derivatives are not available in this free API
+    // We'll try to fetch them from the user-provided APIs as initial fallbacks
+    let bengaliDefinition = undefined;
+    let derivatives = undefined;
+
+    try {
+      // 1. Try MyMemory for Bengali
+      const bnResp = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(word)}&langpair=en|bn`);
+      if (bnResp.ok) {
+        const bnData = await bnResp.json();
+        bengaliDefinition = bnData.responseData.translatedText;
+      }
+
+      // 2. Try Datamuse for some related words as derivatives fallback
+      const derivResp = await fetch(`https://api.datamuse.com/words?rel_jja=${encodeURIComponent(word)}`);
+      if (derivResp.ok) {
+        const derivData = await derivResp.json();
+        if (derivData.length > 0) {
+          derivatives = {
+            base: word,
+            noun: "N/A",
+            verb: "N/A",
+            adjective: derivData[0]?.word || "N/A",
+            adverb: "N/A"
+          };
+        }
+      }
+    } catch (e) {
+      console.warn("Secondary API fetch failed, will rely on Gemini:", e);
+    }
+
     return {
       word: entry.word,
       partOfSpeech,
@@ -69,9 +100,8 @@ export const fetchWordDetails = async (word: string): Promise<WordData> => {
       synonyms: Array.from(synonyms).slice(0, 5),
       antonyms: Array.from(antonyms).slice(0, 5),
       examples: Array.from(examples).slice(0, 3),
-      // Bengali definition and derivatives are not available in this free API
-      bengaliDefinition: undefined,
-      derivatives: undefined
+      bengaliDefinition,
+      derivatives
     };
 
   } catch (error: any) {
