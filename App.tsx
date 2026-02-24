@@ -22,76 +22,79 @@ const App: React.FC = () => {
     setSearchedWord(term);
 
     try {
-      // 1. Fetch Text Data from Dictionary API
-      const dictionaryData = await fetchWordDetails(term);
+      // Parallelize both API calls for maximum speed
+      const [dictionaryResult, enrichmentResult] = await Promise.allSettled([
+        fetchWordDetails(term),
+        fetchEnrichmentData(term)
+      ]);
       
-      // 2. Fetch Enrichment Data (Bengali + Derivatives) from Gemini API
-      // We do this in parallel or sequence? Let's do it and merge.
-      // We set the initial data first so the user sees something immediately
-      setData(dictionaryData);
-      setLoading(false);
+      let finalData: WordData | null = null;
 
-      // Fetch enrichment in background and update
-      fetchEnrichmentData(term).then((enrichmentData) => {
-        setData(prevData => {
-          if (!prevData) return null;
-          return { ...prevData, ...enrichmentData };
-        });
-      });
+      if (dictionaryResult.status === 'fulfilled') {
+        finalData = dictionaryResult.value;
+      } else {
+        throw dictionaryResult.reason;
+      }
 
+      if (enrichmentResult.status === 'fulfilled') {
+        finalData = { ...finalData, ...enrichmentResult.value };
+      }
+
+      setData(finalData);
     } catch (err: any) {
       console.error(err);
       setError(err.message || "Failed to fetch word details. Please try again.");
+    } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen pb-20 overflow-x-hidden text-slate-100">
+    <div className="min-h-screen pb-10 overflow-x-hidden text-slate-100">
       {/* 3D Floating Header */}
-      <div className="sticky top-4 z-50 px-4 mb-8">
-        <div className="max-w-7xl mx-auto glass-card rounded-2xl px-6 py-4 flex items-center justify-between relative overflow-hidden">
+      <div className="sticky top-2 sm:top-4 z-50 px-2 sm:px-4 mb-6 sm:mb-8">
+        <div className="max-w-7xl mx-auto glass-card rounded-xl sm:rounded-2xl px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between relative overflow-hidden">
           
           {/* Logo Section */}
-          <div className="flex items-center gap-3 z-10">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/30 border-b-4 border-blue-700 transform hover:-translate-y-0.5 transition-transform duration-300">
-              <BrainCircuit className="w-6 h-6" />
+          <div className="flex items-center gap-2 sm:gap-3 z-10">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg sm:rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/30 border-b-2 sm:border-b-4 border-blue-700 transform hover:-translate-y-0.5 transition-transform duration-300">
+              <BrainCircuit className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <div>
-              <h1 className="text-xl font-extrabold text-white tracking-tight">Mujahid's Vocabs Bank</h1>
-              <p className="text-[10px] uppercase tracking-widest text-cyan-400 font-bold">Smart Dictionary</p>
+            <div className="flex flex-col">
+              <h1 className="text-sm sm:text-xl font-extrabold text-white tracking-tight leading-none">Vocabs Bank</h1>
+              <p className="text-[8px] sm:text-[10px] uppercase tracking-widest text-cyan-400 font-bold mt-0.5 sm:mt-1">Smart Dictionary</p>
             </div>
           </div>
 
-          {/* Center Animated Dedication */}
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:block perspective-1000 glass-panel px-8 py-2">
+          {/* Center Animated Dedication - Visible on all screens but smaller on mobile */}
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center perspective-1000 glass-panel px-3 sm:px-8 py-1 sm:py-2">
             <div className="text-center">
-              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Dedicated to</p>
-              <p className="text-base font-black text-electric-flow whitespace-nowrap tracking-wide">
+              <p className="text-[6px] sm:text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0 sm:mb-0.5">Dedicated to</p>
+              <p className="text-[10px] sm:text-base font-black text-electric-flow whitespace-nowrap tracking-wide">
                 Souad Anam Himel
               </p>
             </div>
           </div>
 
-          {/* Version Badge */}
-          <div className="hidden sm:block z-10">
-            <span className="px-3 py-1 bg-slate-800/50 border border-slate-700 rounded-lg text-xs font-mono text-slate-400">v2.3 SaaS-Edition</span>
+          {/* Version Badge - Hidden on very small screens */}
+          <div className="hidden xs:block z-10">
+            <span className="px-2 py-0.5 sm:px-3 sm:py-1 bg-slate-800/50 border border-slate-700 rounded-md sm:rounded-lg text-[8px] sm:text-xs font-mono text-slate-400">v2.3</span>
           </div>
         </div>
       </div>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 sm:pt-4">
         
         {/* Search Section */}
-        <div className="text-center mb-12 relative">
+        <div className="text-center mb-8 sm:mb-12 relative">
            {/* Decorative blobs */}
-           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-500/10 rounded-full blur-3xl -z-10"></div>
-           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-cyan-500/10 rounded-full blur-3xl -z-10 translate-x-20 -translate-y-20"></div>
+           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] sm:w-[600px] h-[300px] sm:h-[600px] bg-blue-500/10 rounded-full blur-3xl -z-10"></div>
+           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200px] sm:w-[400px] h-[200px] sm:h-[400px] bg-cyan-500/10 rounded-full blur-3xl -z-10 translate-x-10 sm:translate-x-20 -translate-y-10 sm:-translate-y-20"></div>
 
-          <h2 className="text-4xl md:text-7xl font-black text-white mb-6 tracking-tight drop-shadow-lg">
+          <h2 className="text-3xl sm:text-7xl font-black text-white mb-4 sm:mb-6 tracking-tight drop-shadow-lg leading-tight">
             Master <span className="text-gradient-blue">Any Word</span>
           </h2>
-          <p className="text-slate-400 mb-10 max-w-xl mx-auto text-lg font-medium leading-relaxed">
+          <p className="text-slate-400 mb-6 sm:mb-10 max-w-xl mx-auto text-sm sm:text-lg font-medium leading-relaxed px-4">
             Unlock deep meanings and contexts with our smart AI engine.
           </p>
           <SearchInput onSearch={handleSearch} isLoading={loading} />
