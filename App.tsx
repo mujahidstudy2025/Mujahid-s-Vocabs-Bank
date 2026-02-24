@@ -11,12 +11,14 @@ import { WordData } from './types';
 
 const App: React.FC = () => {
   const [loading, setLoading] = useState(false);
+  const [enrichmentLoading, setEnrichmentLoading] = useState(false);
   const [data, setData] = useState<WordData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [searchedWord, setSearchedWord] = useState<string>('');
 
   const handleSearch = async (term: string) => {
     setLoading(true);
+    setEnrichmentLoading(false);
     setError(null);
     setData(null);
     setSearchedWord(term);
@@ -30,13 +32,31 @@ const App: React.FC = () => {
       // We set the initial data first so the user sees something immediately
       setData(dictionaryData);
       setLoading(false);
+      
+      // Start enrichment
+      setEnrichmentLoading(true);
 
       // Fetch enrichment in background and update
       fetchEnrichmentData(term).then((enrichmentData) => {
         setData(prevData => {
           if (!prevData) return null;
-          return { ...prevData, ...enrichmentData };
+          
+          // Merge synonyms and antonyms (prefer Gemini if Dictionary API returned none, or combine?)
+          // Let's combine unique values, but limit to 5-7 to avoid clutter
+          const combinedSynonyms = Array.from(new Set([...prevData.synonyms, ...(enrichmentData.synonyms || [])])).slice(0, 10);
+          const combinedAntonyms = Array.from(new Set([...prevData.antonyms, ...(enrichmentData.antonyms || [])])).slice(0, 10);
+
+          return { 
+            ...prevData, 
+            ...enrichmentData,
+            synonyms: combinedSynonyms,
+            antonyms: combinedAntonyms
+          };
         });
+        setEnrichmentLoading(false);
+      }).catch(err => {
+        console.error("Enrichment failed in App:", err);
+        setEnrichmentLoading(false);
       });
 
     } catch (err: any) {
@@ -118,6 +138,12 @@ const App: React.FC = () => {
             {/* Left Column: Definition & Examples */}
             <div className="space-y-6">
               <WordDisplay data={data} />
+              {enrichmentLoading && !data.bengaliDefinition && (
+                 <div className="text-xs text-cyan-400 animate-pulse flex items-center gap-2">
+                   <Sparkles className="w-3 h-3" />
+                   <span>AI is analyzing Bengali meaning and derivatives...</span>
+                 </div>
+              )}
               <Examples examples={data.examples} />
             </div>
 

@@ -15,43 +15,55 @@ const getClient = () => {
 export const fetchEnrichmentData = async (word: string): Promise<Partial<WordData>> => {
   try {
     const ai = getClient();
-    const model = "gemini-3-flash-preview";
+    // Use a model that is likely to be available and stable.
+    // gemini-3.1-pro-preview is better for complex tasks like linguistic analysis
+    const model = "gemini-3.1-pro-preview"; 
     
+    console.log(`Fetching enrichment data for "${word}" using model ${model}...`);
+
     const response = await ai.models.generateContent({
       model,
-      contents: `For the word "${word}", provide the meaning in Bengali (Bangla) and its derivative forms (base, noun, verb, adjective, adverb). If a form doesn't exist, use "N/A".`,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            bengaliDefinition: { type: Type.STRING, description: "The meaning of the word in Bengali language script" },
-            derivatives: {
-              type: Type.OBJECT,
-              properties: {
-                base: { type: Type.STRING },
-                noun: { type: Type.STRING },
-                verb: { type: Type.STRING },
-                adjective: { type: Type.STRING },
-                adverb: { type: Type.STRING }
-              },
-              required: ["base", "noun", "verb", "adjective", "adverb"]
-            }
-          },
-          required: ["bengaliDefinition", "derivatives"],
+      contents: `For the word "${word}", provide a JSON object with the following structure:
+      {
+        "bengaliDefinition": "The meaning of the word in Bengali (Bangla) script",
+        "synonyms": ["synonym1", "synonym2", "synonym3", "synonym4", "synonym5"],
+        "antonyms": ["antonym1", "antonym2", "antonym3", "antonym4", "antonym5"],
+        "derivatives": {
+          "base": "base form",
+          "noun": "noun form or N/A",
+          "verb": "verb form or N/A",
+          "adjective": "adjective form or N/A",
+          "adverb": "adverb form or N/A"
         }
+      }
+      Return ONLY the JSON object. Do not include any markdown formatting or explanations. Provide up to 5 synonyms and 5 antonyms. If none exist, return empty arrays.`,
+      config: {
+        // We remove strict schema validation to be more robust against model variations
+        // responseMimeType: "application/json", 
       }
     });
 
     let text = response.text;
+    console.log("Raw Gemini response:", text);
+
     if (!text) {
+      console.warn("Gemini returned empty text.");
       return {};
     }
     
     // Clean up potential Markdown code blocks (e.g., ```json ... ```)
     text = text.replace(/```json\n?|```/g, '').trim();
     
-    return JSON.parse(text) as Partial<WordData>;
+    // Attempt to parse JSON
+    try {
+      const data = JSON.parse(text);
+      return data as Partial<WordData>;
+    } catch (parseError) {
+      console.error("Failed to parse Gemini response as JSON:", parseError);
+      console.log("Response text was:", text);
+      return {};
+    }
+
   } catch (error) {
     console.error("Gemini Enrichment Error:", error);
     return {}; // Gracefully return empty object on error
