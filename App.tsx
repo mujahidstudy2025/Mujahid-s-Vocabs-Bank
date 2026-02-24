@@ -50,31 +50,31 @@ const App: React.FC = () => {
     <div className="min-h-screen pb-20 overflow-x-hidden text-slate-100">
       {/* 3D Floating Header */}
       <div className="sticky top-4 z-50 px-4 mb-8">
-        <div className="max-w-7xl mx-auto glass-card rounded-2xl px-6 py-4 flex items-center justify-between relative overflow-hidden">
+        <div className="max-w-7xl mx-auto glass-card rounded-2xl px-4 py-3 md:px-6 md:py-4 flex flex-col md:flex-row items-center justify-between relative overflow-hidden gap-3 md:gap-0">
           
           {/* Logo Section */}
-          <div className="flex items-center gap-3 z-10">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/30 border-b-4 border-blue-700 transform hover:-translate-y-0.5 transition-transform duration-300">
-              <BrainCircuit className="w-6 h-6" />
+          <div className="flex items-center gap-3 z-10 w-full md:w-auto justify-center md:justify-start">
+            <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/30 border-b-4 border-blue-700 transform hover:-translate-y-0.5 transition-transform duration-300">
+              <BrainCircuit className="w-5 h-5 md:w-6 md:h-6" />
             </div>
-            <div>
-              <h1 className="text-xl font-extrabold text-white tracking-tight">Mujahid's Vocabs Bank</h1>
-              <p className="text-[10px] uppercase tracking-widest text-cyan-400 font-bold">Smart Dictionary</p>
+            <div className="text-center md:text-left">
+              <h1 className="text-lg md:text-xl font-extrabold text-white tracking-tight leading-tight">Mujahid's Vocabs Bank</h1>
+              <p className="text-[9px] md:text-[10px] uppercase tracking-widest text-cyan-400 font-bold">Smart Dictionary</p>
             </div>
           </div>
 
           {/* Center Animated Dedication */}
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:block perspective-1000 glass-panel px-8 py-2">
+          <div className="relative md:absolute md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 perspective-1000 glass-panel px-6 py-1.5 md:px-8 md:py-2 w-full md:w-auto">
             <div className="text-center">
-              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Dedicated to</p>
-              <p className="text-base font-black text-electric-flow whitespace-nowrap tracking-wide">
+              <p className="text-[8px] md:text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Dedicated to</p>
+              <p className="text-sm md:text-base font-black text-electric-flow whitespace-nowrap tracking-wide">
                 Souad Anam Himel
               </p>
             </div>
           </div>
 
           {/* Version Badge */}
-          <div className="hidden sm:block z-10">
+          <div className="hidden md:block z-10">
             <span className="px-3 py-1 bg-slate-800/50 border border-slate-700 rounded-lg text-xs font-mono text-slate-400">v2.3 SaaS-Edition</span>
           </div>
         </div>
