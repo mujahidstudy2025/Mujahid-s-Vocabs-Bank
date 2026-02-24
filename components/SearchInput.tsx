@@ -19,30 +19,33 @@ const SearchInput: React.FC<SearchInputProps> = ({ onSearch, isLoading }) => {
   return (
     <div className="w-full max-w-2xl mx-auto">
       <form onSubmit={handleSubmit} className="relative group transform transition-all duration-300 hover:scale-[1.01]">
+        {/* Glass Container for Input */}
+        <div className="absolute inset-0 bg-slate-800/40 backdrop-blur-xl rounded-full border border-white/10 shadow-2xl"></div>
+        
         <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none z-10">
           {isLoading ? (
-            <Loader2 className="h-6 w-6 text-green-500 animate-spin" />
+            <Loader2 className="h-6 w-6 text-cyan-400 animate-spin" />
           ) : (
-            <Search className="h-6 w-6 text-slate-400" />
+            <Search className="h-6 w-6 text-slate-400 group-focus-within:text-cyan-400 transition-colors" />
           )}
         </div>
         
-        {/* Recessed Input */}
+        {/* Input */}
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Search for a word..."
-          className="block w-full pl-16 pr-36 py-5 bg-slate-50 border-2 border-slate-200 border-t-slate-300 rounded-2xl shadow-inner text-xl font-bold text-slate-700 placeholder-slate-400 focus:outline-none focus:border-green-500 focus:bg-white focus:ring-0 transition-all"
+          className="block w-full pl-16 pr-40 py-5 bg-transparent relative z-0 text-xl font-bold text-white placeholder-slate-500 focus:outline-none rounded-full"
           disabled={isLoading}
         />
         
         {/* 3D Button */}
-        <div className="absolute inset-y-2 right-2 flex items-center">
+        <div className="absolute inset-y-1.5 right-1.5 flex items-center z-10">
           <button
             type="submit"
             disabled={!input.trim() || isLoading}
-            className="h-full px-6 bg-green-500 text-white rounded-xl font-bold text-sm tracking-wide uppercase shadow-[0_4px_0_rgb(21,128,61)] active:shadow-none active:translate-y-[4px] hover:bg-green-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0"
+            className="glossy-button-blue h-full px-8 text-white text-sm tracking-wide uppercase disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Search
           </button>

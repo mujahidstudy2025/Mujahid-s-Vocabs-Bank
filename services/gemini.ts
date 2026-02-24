@@ -12,60 +12,46 @@ const getClient = () => {
   return new GoogleGenAI({ apiKey });
 };
 
-export const fetchWordDetails = async (word: string): Promise<WordData> => {
-  const ai = getClient();
-  const model = "gemini-3-flash-preview";
-  
-  const response = await ai.models.generateContent({
-    model,
-    contents: `Analyze the word "${word}" thoroughly. 
-    Provide the part of speech, a clear English definition, the meaning in Bengali (Bangla), 
-    a list of synonyms (max 5), a list of antonyms (max 5, if applicable), 
-    3 distinct sentence examples showing how the word is used in context,
-    and the derivative forms of the word (base, noun, verb, adjective, adverb). If a form doesn't exist, use "N/A".`,
-    config: {
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          word: { type: Type.STRING },
-          partOfSpeech: { type: Type.STRING },
-          definition: { type: Type.STRING },
-          bengaliDefinition: { type: Type.STRING, description: "The meaning of the word in Bengali language script" },
-          synonyms: { 
-            type: Type.ARRAY, 
-            items: { type: Type.STRING } 
+export const fetchEnrichmentData = async (word: string): Promise<Partial<WordData>> => {
+  try {
+    const ai = getClient();
+    const model = "gemini-3-flash-preview";
+    
+    const response = await ai.models.generateContent({
+      model,
+      contents: `For the word "${word}", provide the meaning in Bengali (Bangla) and its derivative forms (base, noun, verb, adjective, adverb). If a form doesn't exist, use "N/A".`,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            bengaliDefinition: { type: Type.STRING, description: "The meaning of the word in Bengali language script" },
+            derivatives: {
+              type: Type.OBJECT,
+              properties: {
+                base: { type: Type.STRING },
+                noun: { type: Type.STRING },
+                verb: { type: Type.STRING },
+                adjective: { type: Type.STRING },
+                adverb: { type: Type.STRING }
+              },
+              required: ["base", "noun", "verb", "adjective", "adverb"]
+            }
           },
-          antonyms: { 
-            type: Type.ARRAY, 
-            items: { type: Type.STRING } 
-          },
-          examples: { 
-            type: Type.ARRAY, 
-            items: { type: Type.STRING } 
-          },
-          derivatives: {
-            type: Type.OBJECT,
-            properties: {
-              base: { type: Type.STRING },
-              noun: { type: Type.STRING },
-              verb: { type: Type.STRING },
-              adjective: { type: Type.STRING },
-              adverb: { type: Type.STRING }
-            },
-            required: ["base", "noun", "verb", "adjective", "adverb"]
-          }
-        },
-        required: ["word", "partOfSpeech", "definition", "bengaliDefinition", "synonyms", "examples", "derivatives"],
+          required: ["bengaliDefinition", "derivatives"],
+        }
       }
-    }
-  });
+    });
 
-  const text = response.text;
-  if (!text) {
-    throw new Error("No data received from Gemini.");
+    const text = response.text;
+    if (!text) {
+      return {};
+    }
+    
+    return JSON.parse(text) as Partial<WordData>;
+  } catch (error) {
+    console.error("Gemini Enrichment Error:", error);
+    return {}; // Gracefully return empty object on error
   }
-  
-  return JSON.parse(text) as WordData;
 };
 

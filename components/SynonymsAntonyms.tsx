@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRightLeft, ShieldX, ShieldCheck, Layers } from 'lucide-react';
+import { ArrowRightLeft, ShieldX, ShieldCheck, Layers, GitFork } from 'lucide-react';
 
 interface SynAntProps {
   synonyms: string[];
@@ -7,60 +7,51 @@ interface SynAntProps {
 }
 
 const SynonymsAntonyms: React.FC<SynAntProps> = ({ synonyms, antonyms }) => {
+  if ((!synonyms || synonyms.length === 0) && (!antonyms || antonyms.length === 0)) return null;
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 h-full">
-      {/* Synonyms */}
-      <div className="bg-white rounded-[2rem] p-8 border-2 border-slate-100 border-b-[6px] border-slate-200 relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-8 opacity-5">
-           <Layers className="w-24 h-24 text-green-900" />
-        </div>
-        
-        <h3 className="text-green-700 font-extrabold text-xl mb-6 flex items-center gap-3">
-          <div className="p-2 bg-green-100 rounded-lg text-green-600">
-            <ShieldCheck className="w-5 h-5" />
+    <div className="glass-card rounded-3xl p-6 relative overflow-hidden group hover:shadow-pink-500/10 transition-all duration-500 h-full">
+      <div className="absolute top-0 right-0 w-32 h-32 bg-pink-500/10 rounded-bl-full -mr-10 -mt-10 transition-transform group-hover:scale-110 duration-700"></div>
+      
+      <div className="relative z-10">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-2.5 bg-pink-500/20 text-pink-400 rounded-xl border border-pink-500/20">
+            <GitFork className="w-6 h-6" />
           </div>
-          Synonyms
-        </h3>
-        <div className="flex flex-wrap gap-3">
-          {synonyms && synonyms.length > 0 ? (
-            synonyms.map((syn, idx) => (
-              <span
-                key={idx}
-                className="px-4 py-2 bg-green-50 text-green-800 rounded-xl text-sm font-bold border-b-4 border-green-200 hover:-translate-y-1 hover:border-b-green-300 transition-all cursor-default"
-              >
-                {syn}
-              </span>
-            ))
-          ) : (
-            <span className="text-slate-400 text-sm font-mono p-2">No synonyms found</span>
+          <h3 className="text-xl font-bold text-white">Relations</h3>
+        </div>
+
+        <div className="space-y-6">
+          {synonyms && synonyms.length > 0 && (
+            <div>
+              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-400"></span>
+                Synonyms
+              </h4>
+              <div className="flex flex-wrap gap-2">
+                {synonyms.map((syn) => (
+                  <span key={syn} className="px-3 py-1.5 bg-slate-800/50 border border-slate-700/50 text-slate-200 rounded-lg text-sm font-medium hover:bg-green-500/20 hover:border-green-500/30 hover:text-green-300 transition-colors cursor-default">
+                    {syn}
+                  </span>
+                ))}
+              </div>
+            </div>
           )}
-        </div>
-      </div>
 
-      {/* Antonyms */}
-      <div className="bg-white rounded-[2rem] p-8 border-2 border-slate-100 border-b-[6px] border-slate-200 relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-8 opacity-5">
-           <ArrowRightLeft className="w-24 h-24 text-rose-900" />
-        </div>
-
-        <h3 className="text-rose-700 font-extrabold text-xl mb-6 flex items-center gap-3">
-          <div className="p-2 bg-rose-100 rounded-lg text-rose-600">
-            <ShieldX className="w-5 h-5" />
-          </div>
-          Antonyms
-        </h3>
-        <div className="flex flex-wrap gap-3">
-          {antonyms && antonyms.length > 0 ? (
-            antonyms.map((ant, idx) => (
-              <span
-                key={idx}
-                className="px-4 py-2 bg-rose-50 text-rose-800 rounded-xl text-sm font-bold border-b-4 border-rose-200 hover:-translate-y-1 hover:border-b-rose-300 transition-all cursor-default"
-              >
-                {ant}
-              </span>
-            ))
-          ) : (
-            <span className="text-slate-400 text-sm font-mono p-2">No antonyms found</span>
+          {antonyms && antonyms.length > 0 && (
+            <div>
+              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-400"></span>
+                Antonyms
+              </h4>
+              <div className="flex flex-wrap gap-2">
+                {antonyms.map((ant) => (
+                  <span key={ant} className="px-3 py-1.5 bg-slate-800/50 border border-slate-700/50 text-slate-200 rounded-lg text-sm font-medium hover:bg-red-500/20 hover:border-red-500/30 hover:text-red-300 transition-colors cursor-default">
+                    {ant}
+                  </span>
+                ))}
+              </div>
+            </div>
           )}
         </div>
       </div>

@@ -6,6 +6,7 @@ import SynonymsAntonyms from './components/SynonymsAntonyms';
 import Derivatives from './components/Derivatives';
 import Examples from './components/Examples';
 import { fetchWordDetails } from './services/dictionary';
+import { fetchEnrichmentData } from './services/gemini';
 import { WordData } from './types';
 
 const App: React.FC = () => {
@@ -21,10 +22,23 @@ const App: React.FC = () => {
     setSearchedWord(term);
 
     try {
-      // 1. Fetch Text Data
-      const wordData = await fetchWordDetails(term);
-      setData(wordData);
+      // 1. Fetch Text Data from Dictionary API
+      const dictionaryData = await fetchWordDetails(term);
+      
+      // 2. Fetch Enrichment Data (Bengali + Derivatives) from Gemini API
+      // We do this in parallel or sequence? Let's do it and merge.
+      // We set the initial data first so the user sees something immediately
+      setData(dictionaryData);
       setLoading(false);
+
+      // Fetch enrichment in background and update
+      fetchEnrichmentData(term).then((enrichmentData) => {
+        setData(prevData => {
+          if (!prevData) return null;
+          return { ...prevData, ...enrichmentData };
+        });
+      });
+
     } catch (err: any) {
       console.error(err);
       setError(err.message || "Failed to fetch word details. Please try again.");
@@ -33,36 +47,51 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen pb-20 overflow-x-hidden">
+    <div className="min-h-screen pb-20 overflow-x-hidden text-slate-100">
       {/* 3D Floating Header */}
       <div className="sticky top-4 z-50 px-4 mb-8">
-        <div className="max-w-7xl mx-auto bg-white/90 backdrop-blur-md border-2 border-slate-100 border-b-4 border-slate-200 rounded-2xl shadow-xl shadow-green-900/5 px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-green-500/30 border-b-4 border-green-700 transform hover:-translate-y-0.5 transition-transform duration-300">
+        <div className="max-w-7xl mx-auto glass-card rounded-2xl px-6 py-4 flex items-center justify-between relative overflow-hidden">
+          
+          {/* Logo Section */}
+          <div className="flex items-center gap-3 z-10">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/30 border-b-4 border-blue-700 transform hover:-translate-y-0.5 transition-transform duration-300">
               <BrainCircuit className="w-6 h-6" />
             </div>
             <div>
-              <h1 className="text-xl font-extrabold text-slate-800 tracking-tight">Mujahid's Vocabs Bank</h1>
-              <p className="text-[10px] uppercase tracking-widest text-green-600 font-bold">Smart Dictionary</p>
+              <h1 className="text-xl font-extrabold text-white tracking-tight">Mujahid's Vocabs Bank</h1>
+              <p className="text-[10px] uppercase tracking-widest text-cyan-400 font-bold">Smart Dictionary</p>
             </div>
           </div>
-          <div className="hidden sm:block">
-            <span className="px-3 py-1 bg-slate-100 border border-slate-200 rounded-lg text-xs font-mono text-slate-500">v2.1 Fast-Edition</span>
+
+          {/* Center Animated Dedication */}
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:block perspective-1000 glass-panel px-8 py-2">
+            <div className="text-center">
+              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Dedicated to</p>
+              <p className="text-base font-black text-electric-flow whitespace-nowrap tracking-wide">
+                Souad Anam Himel
+              </p>
+            </div>
+          </div>
+
+          {/* Version Badge */}
+          <div className="hidden sm:block z-10">
+            <span className="px-3 py-1 bg-slate-800/50 border border-slate-700 rounded-lg text-xs font-mono text-slate-400">v2.3 SaaS-Edition</span>
           </div>
         </div>
       </div>
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
         
         {/* Search Section */}
-        <div className="text-center mb-16 relative">
+        <div className="text-center mb-12 relative">
            {/* Decorative blobs */}
-           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-green-400/20 rounded-full blur-3xl -z-10 opacity-50 mix-blend-multiply filter"></div>
+           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-500/10 rounded-full blur-3xl -z-10"></div>
+           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-cyan-500/10 rounded-full blur-3xl -z-10 translate-x-20 -translate-y-20"></div>
 
-          <h2 className="text-4xl md:text-6xl font-black text-slate-800 mb-6 tracking-tight drop-shadow-sm">
-            Master <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-500">Any Word</span>
+          <h2 className="text-4xl md:text-7xl font-black text-white mb-6 tracking-tight drop-shadow-lg">
+            Master <span className="text-gradient-blue">Any Word</span>
           </h2>
-          <p className="text-slate-600 mb-10 max-w-xl mx-auto text-lg font-medium leading-relaxed">
+          <p className="text-slate-400 mb-10 max-w-xl mx-auto text-lg font-medium leading-relaxed">
             Unlock deep meanings and contexts with our smart AI engine.
           </p>
           <SearchInput onSearch={handleSearch} isLoading={loading} />
@@ -70,7 +99,7 @@ const App: React.FC = () => {
 
         {/* Error State */}
         {error && (
-          <div className="max-w-2xl mx-auto mb-8 p-6 bg-red-50 text-red-600 rounded-2xl border-2 border-red-100 border-b-4 text-center font-bold shadow-sm">
+          <div className="max-w-2xl mx-auto mb-8 p-6 bg-red-900/20 text-red-400 rounded-2xl border border-red-900/50 text-center font-bold shadow-sm backdrop-blur-sm">
             {error}
           </div>
         )}
@@ -78,32 +107,24 @@ const App: React.FC = () => {
         {/* Loading Skeleton */}
         {loading && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-pulse">
-            <div className="lg:col-span-12 h-80 bg-slate-200 rounded-3xl"></div>
-            <div className="lg:col-span-12 h-48 bg-slate-200 rounded-3xl"></div>
+            <div className="lg:col-span-12 h-80 bg-slate-800/50 rounded-3xl border border-slate-700/50"></div>
+            <div className="lg:col-span-12 h-48 bg-slate-800/50 rounded-3xl border border-slate-700/50"></div>
           </div>
         )}
 
         {/* Results View */}
         {!loading && data && (
-          <div className="space-y-8">
-            {/* Top Row: Definition */}
-            <div className="w-full">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
+            {/* Left Column: Definition & Examples */}
+            <div className="space-y-6">
               <WordDisplay data={data} />
-            </div>
-
-            {/* Middle Row: Synonyms & Antonyms */}
-            <div className="w-full">
-              <SynonymsAntonyms synonyms={data.synonyms} antonyms={data.antonyms} />
-            </div>
-
-            {/* Derivatives Row */}
-            <div className="w-full">
-              <Derivatives derivatives={data.derivatives} />
-            </div>
-
-            {/* Bottom Row: Examples */}
-            <div className="w-full">
               <Examples examples={data.examples} />
+            </div>
+
+            {/* Right Column: Synonyms, Antonyms & Derivatives */}
+            <div className="space-y-6">
+              <SynonymsAntonyms synonyms={data.synonyms} antonyms={data.antonyms} />
+              <Derivatives derivatives={data.derivatives} />
             </div>
           </div>
         )}
@@ -111,10 +132,10 @@ const App: React.FC = () => {
         {/* Empty State / Welcome */}
         {!loading && !data && !error && (
           <div className="text-center py-24 opacity-60">
-             <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-white border-2 border-slate-200 border-b-8 mb-6 shadow-xl transform rotate-3">
-                <Sparkles className="w-10 h-10 text-green-500" />
+             <div className="inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-slate-800/50 border border-slate-700 mb-6 shadow-2xl shadow-blue-900/20 transform rotate-3 backdrop-blur-sm">
+                <Sparkles className="w-12 h-12 text-cyan-400" />
              </div>
-             <p className="text-slate-500 font-medium text-lg">Type a word to launch the engine.</p>
+             <p className="text-slate-400 font-medium text-lg">Type a word to launch the engine.</p>
           </div>
         )}
 
