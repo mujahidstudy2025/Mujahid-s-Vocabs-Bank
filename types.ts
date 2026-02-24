@@ -2,7 +2,7 @@ export interface WordData {
   word: string;
   partOfSpeech: string;
   definition: string;
-  bengaliDefinition: string;
+  bengaliDefinition?: string;
   synonyms: string[];
   antonyms: string[];
   examples: string[];

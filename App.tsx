@@ -5,7 +5,7 @@ import WordDisplay from './components/WordDisplay';
 import SynonymsAntonyms from './components/SynonymsAntonyms';
 import Derivatives from './components/Derivatives';
 import Examples from './components/Examples';
-import { fetchWordDetails } from './services/gemini';
+import { fetchWordDetails } from './services/dictionary';
 import { WordData } from './types';
 
 const App: React.FC = () => {
@@ -27,7 +27,6 @@ const App: React.FC = () => {
       setLoading(false);
     } catch (err: any) {
       console.error(err);
-      // Show the specific error message (like "API Key is missing")
       setError(err.message || "Failed to fetch word details. Please try again.");
       setLoading(false);
     }
@@ -73,11 +72,6 @@ const App: React.FC = () => {
         {error && (
           <div className="max-w-2xl mx-auto mb-8 p-6 bg-red-50 text-red-600 rounded-2xl border-2 border-red-100 border-b-4 text-center font-bold shadow-sm">
             {error}
-            {error.includes("API Key") && (
-              <p className="text-xs text-red-400 mt-2 font-mono">
-                Hint: Check Netlify Site Settings &gt; Environment Variables
-              </p>
-            )}
           </div>
         )}
 
