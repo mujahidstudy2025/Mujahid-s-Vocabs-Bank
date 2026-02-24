@@ -43,10 +43,13 @@ export const fetchEnrichmentData = async (word: string): Promise<Partial<WordDat
       }
     });
 
-    const text = response.text;
+    let text = response.text;
     if (!text) {
       return {};
     }
+    
+    // Clean up potential Markdown code blocks (e.g., ```json ... ```)
+    text = text.replace(/```json\n?|```/g, '').trim();
     
     return JSON.parse(text) as Partial<WordData>;
   } catch (error) {
