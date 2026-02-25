@@ -65,19 +65,16 @@ export const fetchWordDetails = async (word: string): Promise<WordData> => {
       });
     });
 
-    // Initial derivatives based on what the word ITSELF is
-    // e.g. if word is "run" and it has "noun" and "verb" meanings, we fill those.
-    const derivatives: any = {
+    // Bengali definition and derivatives are not available in this free API
+    // We'll try to fetch them from the user-provided APIs as initial fallbacks
+    let bengaliDefinition = undefined;
+    let derivatives = {
       base: word,
       noun: partsOfSpeechFound.has('noun') ? word : "N/A",
       verb: partsOfSpeechFound.has('verb') ? word : "N/A",
       adjective: partsOfSpeechFound.has('adjective') ? word : "N/A",
       adverb: partsOfSpeechFound.has('adverb') ? word : "N/A",
     };
-
-    // Bengali definition and derivatives are not available in this free API
-    // We'll try to fetch them from the user-provided APIs as initial fallbacks
-    let bengaliDefinition = undefined;
 
     try {
       // 1. Try MyMemory for Bengali
@@ -87,12 +84,33 @@ export const fetchWordDetails = async (word: string): Promise<WordData> => {
         bengaliDefinition = bnData.responseData.translatedText;
       }
 
-      // 2. Try Datamuse for some related words as derivatives fallback
-      // We can try to find related words if our self-check failed
-      // But Datamuse is weak for this specific "form" task. 
-      // We'll rely on Gemini for the "other" forms.
+      // 2. Try Datamuse for Derivatives (Word Family)
+      // Strategy: Search for words containing the base word (sp=*word*) and get parts of speech (md=p)
+      const dmResp = await fetch(`https://api.datamuse.com/words?sp=*${encodeURIComponent(word)}*&md=p&max=20`);
+      if (dmResp.ok) {
+        const dmData = await dmResp.json();
+        
+        // Helper to find the shortest word for a given POS that isn't the base word itself (unless base is that POS)
+        const findForm = (posTag: string, currentVal: string) => {
+          if (currentVal !== "N/A" && currentVal !== word) return currentVal; // Keep existing if it's a valid derivative
+
+          const match = dmData.find((item: any) => 
+            item.tags && 
+            item.tags.includes(posTag) && 
+            item.word.toLowerCase() !== word.toLowerCase() // Prefer a different word form
+          );
+          
+          return match ? match.word : currentVal;
+        };
+
+        derivatives.noun = findForm('n', derivatives.noun);
+        derivatives.verb = findForm('v', derivatives.verb);
+        derivatives.adjective = findForm('adj', derivatives.adjective);
+        derivatives.adverb = findForm('adv', derivatives.adverb);
+      }
+
     } catch (e) {
-      console.warn("Secondary API fetch failed, will rely on Gemini:", e);
+      console.warn("Secondary API fetch failed:", e);
     }
 
     return {

@@ -28,36 +28,49 @@ const App: React.FC = () => {
       const dictionaryData = await fetchWordDetails(term);
       
       // 2. Fetch Enrichment Data (Bengali + Derivatives) from Gemini API
-      // We do this in parallel or sequence? Let's do it and merge.
-      // We set the initial data first so the user sees something immediately
+      // NOTE: We now fetch Bengali and Derivatives directly in the dictionary service using Datamuse/MyMemory.
+      // We can still use Gemini for EXTRA synonyms/antonyms if the API key is present, but it's not critical.
       setData(dictionaryData);
       setLoading(false);
       
-      // Start enrichment
-      setEnrichmentLoading(true);
+      // Optional: Check if we have an API key before trying Gemini
+      // This prevents errors in environments without the key
+      // @ts-ignore - import.meta.env is available in Vite
+      const hasApiKey = (import.meta.env && import.meta.env.VITE_GEMINI_API_KEY) || (process.env && process.env.GEMINI_API_KEY);
+      
+      if (hasApiKey) {
+        setEnrichmentLoading(true);
+        fetchEnrichmentData(term).then((enrichmentData) => {
+          setData(prevData => {
+            if (!prevData) return null;
+            
+            // Merge synonyms and antonyms
+            const combinedSynonyms = Array.from(new Set([...prevData.synonyms, ...(enrichmentData.synonyms || [])])).slice(0, 10);
+            const combinedAntonyms = Array.from(new Set([...prevData.antonyms, ...(enrichmentData.antonyms || [])])).slice(0, 10);
 
-      // Fetch enrichment in background and update
-      fetchEnrichmentData(term).then((enrichmentData) => {
-        setData(prevData => {
-          if (!prevData) return null;
-          
-          // Merge synonyms and antonyms (prefer Gemini if Dictionary API returned none, or combine?)
-          // Let's combine unique values, but limit to 5-7 to avoid clutter
-          const combinedSynonyms = Array.from(new Set([...prevData.synonyms, ...(enrichmentData.synonyms || [])])).slice(0, 10);
-          const combinedAntonyms = Array.from(new Set([...prevData.antonyms, ...(enrichmentData.antonyms || [])])).slice(0, 10);
-
-          return { 
-            ...prevData, 
-            ...enrichmentData,
-            synonyms: combinedSynonyms,
-            antonyms: combinedAntonyms
-          };
+            return { 
+              ...prevData, 
+              // We do NOT overwrite derivatives or bengaliDefinition from Gemini anymore, 
+              // unless they were missing from the primary source.
+              bengaliDefinition: prevData.bengaliDefinition || enrichmentData.bengaliDefinition,
+              derivatives: {
+                 ...prevData.derivatives!, // Keep existing (Datamuse) derivatives
+                 // Only update if Datamuse failed (value is N/A) and Gemini has a value
+                 noun: prevData.derivatives?.noun === "N/A" && enrichmentData.derivatives?.noun !== "N/A" ? enrichmentData.derivatives!.noun : prevData.derivatives!.noun,
+                 verb: prevData.derivatives?.verb === "N/A" && enrichmentData.derivatives?.verb !== "N/A" ? enrichmentData.derivatives!.verb : prevData.derivatives!.verb,
+                 adjective: prevData.derivatives?.adjective === "N/A" && enrichmentData.derivatives?.adjective !== "N/A" ? enrichmentData.derivatives!.adjective : prevData.derivatives!.adjective,
+                 adverb: prevData.derivatives?.adverb === "N/A" && enrichmentData.derivatives?.adverb !== "N/A" ? enrichmentData.derivatives!.adverb : prevData.derivatives!.adverb,
+              },
+              synonyms: combinedSynonyms,
+              antonyms: combinedAntonyms
+            };
+          });
+          setEnrichmentLoading(false);
+        }).catch(err => {
+          console.warn("Gemini enrichment skipped or failed (non-critical):", err);
+          setEnrichmentLoading(false);
         });
-        setEnrichmentLoading(false);
-      }).catch(err => {
-        console.error("Enrichment failed in App:", err);
-        setEnrichmentLoading(false);
-      });
+      }
 
     } catch (err: any) {
       console.error(err);
