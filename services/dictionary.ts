@@ -43,10 +43,13 @@ export const fetchWordDetails = async (word: string): Promise<WordData> => {
     const synonyms = new Set<string>();
     const antonyms = new Set<string>();
     const examples = new Set<string>();
+    const partsOfSpeechFound = new Set<string>();
     let definition = "";
     let partOfSpeech = "";
 
     entry.meanings.forEach((meaning, index) => {
+      partsOfSpeechFound.add(meaning.partOfSpeech.toLowerCase());
+      
       if (index === 0) {
         partOfSpeech = meaning.partOfSpeech;
         definition = meaning.definitions[0]?.definition || "";
@@ -62,10 +65,19 @@ export const fetchWordDetails = async (word: string): Promise<WordData> => {
       });
     });
 
+    // Initial derivatives based on what the word ITSELF is
+    // e.g. if word is "run" and it has "noun" and "verb" meanings, we fill those.
+    const derivatives: any = {
+      base: word,
+      noun: partsOfSpeechFound.has('noun') ? word : "N/A",
+      verb: partsOfSpeechFound.has('verb') ? word : "N/A",
+      adjective: partsOfSpeechFound.has('adjective') ? word : "N/A",
+      adverb: partsOfSpeechFound.has('adverb') ? word : "N/A",
+    };
+
     // Bengali definition and derivatives are not available in this free API
     // We'll try to fetch them from the user-provided APIs as initial fallbacks
     let bengaliDefinition = undefined;
-    let derivatives = undefined;
 
     try {
       // 1. Try MyMemory for Bengali
@@ -76,19 +88,9 @@ export const fetchWordDetails = async (word: string): Promise<WordData> => {
       }
 
       // 2. Try Datamuse for some related words as derivatives fallback
-      const derivResp = await fetch(`https://api.datamuse.com/words?rel_jja=${encodeURIComponent(word)}`);
-      if (derivResp.ok) {
-        const derivData = await derivResp.json();
-        if (derivData.length > 0) {
-          derivatives = {
-            base: word,
-            noun: "N/A",
-            verb: "N/A",
-            adjective: derivData[0]?.word || "N/A",
-            adverb: "N/A"
-          };
-        }
-      }
+      // We can try to find related words if our self-check failed
+      // But Datamuse is weak for this specific "form" task. 
+      // We'll rely on Gemini for the "other" forms.
     } catch (e) {
       console.warn("Secondary API fetch failed, will rely on Gemini:", e);
     }

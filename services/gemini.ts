@@ -15,9 +15,9 @@ const getClient = () => {
 export const fetchEnrichmentData = async (word: string): Promise<Partial<WordData>> => {
   try {
     const ai = getClient();
-    // Use a model that is likely to be available and stable.
-    // gemini-3.1-pro-preview is better for complex tasks like linguistic analysis
-    const model = "gemini-3.1-pro-preview"; 
+    // Use gemini-2.5-flash for speed and reliability.
+    // It is sufficient for this JSON extraction task.
+    const model = "gemini-2.5-flash"; 
     
     console.log(`Fetching enrichment data for "${word}" using model ${model}...`);
 

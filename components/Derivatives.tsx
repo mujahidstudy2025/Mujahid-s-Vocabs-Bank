@@ -34,7 +34,7 @@ const Derivatives: React.FC<DerivativesProps> = ({ derivatives }) => {
           <h3 className="text-lg sm:text-xl font-bold text-white">Derivatives</h3>
         </div>
 
-        <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-3">
+        <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-3 mb-4">
           {forms.map((form) => (
             <div key={form.label} className="flex flex-col p-2 sm:p-3 bg-slate-800/50 rounded-lg sm:rounded-xl border border-slate-700/50 text-center hover:bg-purple-500/10 hover:border-purple-500/30 transition-colors duration-300">
               <span className="text-[8px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5 sm:mb-1">{form.label}</span>
@@ -47,6 +47,17 @@ const Derivatives: React.FC<DerivativesProps> = ({ derivatives }) => {
               </span>
             </div>
           ))}
+        </div>
+
+        <div className="flex justify-end">
+          <a 
+            href={`https://www.wordhippo.com/what-is/sentences-with-the-word/${derivatives.base}.html`} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-[10px] text-purple-400 hover:text-purple-300 uppercase tracking-widest font-bold flex items-center gap-1 transition-colors"
+          >
+            More on WordHippo &rarr;
+          </a>
         </div>
       </div>
     </div>
