@@ -15,31 +15,36 @@ const getClient = () => {
 export const fetchEnrichmentData = async (word: string): Promise<Partial<WordData>> => {
   try {
     const ai = getClient();
-    // Use gemini-2.5-flash for speed and reliability.
-    // It is sufficient for this JSON extraction task.
-    const model = "gemini-2.5-flash"; 
+    // Use gemini-3-flash-preview with Google Search for accurate, up-to-date linguistic data
+    const model = "gemini-3-flash-preview"; 
     
     console.log(`Fetching enrichment data for "${word}" using model ${model}...`);
 
     const response = await ai.models.generateContent({
       model,
-      contents: `For the word "${word}", provide a JSON object with the following structure:
+      contents: `Search for the word "${word}" to find its meaning in Bengali and its complete word family (derivative forms).
+      
+      Provide a JSON object with this EXACT structure:
       {
         "bengaliDefinition": "The meaning of the word in Bengali (Bangla) script",
         "synonyms": ["synonym1", "synonym2", "synonym3", "synonym4", "synonym5"],
         "antonyms": ["antonym1", "antonym2", "antonym3", "antonym4", "antonym5"],
         "derivatives": {
-          "base": "base form",
-          "noun": "noun form or N/A",
-          "verb": "verb form or N/A",
-          "adjective": "adjective form or N/A",
-          "adverb": "adverb form or N/A"
+          "base": "${word}",
+          "noun": "noun form (e.g. friendship, friendliness) or N/A",
+          "verb": "verb form (e.g. befriend) or N/A",
+          "adjective": "adjective form (e.g. friendly) or N/A",
+          "adverb": "adverb form (e.g. friendly) or N/A"
         }
       }
-      Return ONLY the JSON object. Do not include any markdown formatting or explanations. Provide up to 5 synonyms and 5 antonyms. If none exist, return empty arrays.`,
+      
+      IMPORTANT:
+      - For 'derivatives', look for the most common morphological variations.
+      - Example for 'friend': Noun: friend/friendship, Verb: befriend, Adj: friendly, Adv: friendly.
+      - Return ONLY the JSON object. No markdown, no explanations.`,
       config: {
-        // We remove strict schema validation to be more robust against model variations
-        // responseMimeType: "application/json", 
+        tools: [{ googleSearch: {} }],
+        responseMimeType: "application/json"
       }
     });
 
@@ -51,8 +56,16 @@ export const fetchEnrichmentData = async (word: string): Promise<Partial<WordDat
       return {};
     }
     
-    // Clean up potential Markdown code blocks (e.g., ```json ... ```)
-    text = text.replace(/```json\n?|```/g, '').trim();
+    // Robust JSON extraction: find the first '{' and last '}'
+    const firstBrace = text.indexOf('{');
+    const lastBrace = text.lastIndexOf('}');
+    
+    if (firstBrace !== -1 && lastBrace !== -1) {
+      text = text.substring(firstBrace, lastBrace + 1);
+    } else {
+      // Fallback cleanup if braces aren't clear (unlikely with responseMimeType)
+      text = text.replace(/```json\n?|```/g, '').trim();
+    }
     
     // Attempt to parse JSON
     try {
