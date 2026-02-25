@@ -36,7 +36,7 @@ const App: React.FC = () => {
       // Optional: Check if we have an API key before trying Gemini
       // This prevents errors in environments without the key
       // @ts-ignore - import.meta.env is available in Vite
-      const hasApiKey = (import.meta.env && import.meta.env.VITE_GEMINI_API_KEY) || (process.env && process.env.GEMINI_API_KEY);
+      const hasApiKey = (import.meta.env && import.meta.env.VITE_GEMINI_API_KEY) || (typeof process !== 'undefined' && process.env && process.env.GEMINI_API_KEY);
       
       if (hasApiKey) {
         setEnrichmentLoading(true);
