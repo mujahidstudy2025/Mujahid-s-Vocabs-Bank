@@ -9,9 +9,14 @@ import { fetchEnrichmentData } from './services/gemini';
 import { WordData } from './types';
 
 const App: React.FC = () => {
-  const IS_MAINTENANCE = true;
+  const [isMaintenance, setIsMaintenance] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [enrichmentLoading, setEnrichmentLoading] = useState(false);
+  const [data, setData] = useState<WordData | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [searchedWord, setSearchedWord] = useState<string>('');
 
-  if (IS_MAINTENANCE) {
+  if (isMaintenance) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
         {/* Decorative blobs */}
@@ -27,19 +32,20 @@ const App: React.FC = () => {
             Under <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">Maintenance</span>
           </h1>
           
-          <p className="text-slate-300 text-lg md:text-xl font-medium leading-relaxed drop-shadow-md p-6 bg-slate-900/40 rounded-2xl shadow-inner-3d border border-slate-700/50">
+          <p className="text-slate-300 text-lg md:text-xl font-medium leading-relaxed drop-shadow-md p-6 bg-slate-900/40 rounded-2xl shadow-inner-3d border border-slate-700/50 mb-8">
             The website is currently under maintenance, so some results may be inaccurate.
           </p>
+
+          <button 
+            onClick={() => setIsMaintenance(false)}
+            className="px-8 py-4 bg-slate-800/80 text-slate-300 font-bold rounded-xl border-t border-slate-600/50 border-b-4 border-slate-900 hover:bg-slate-700 hover:text-white transition-all hover:-translate-y-1 active:translate-y-1 active:border-b-0 shadow-md"
+          >
+            Enter Website Anyway
+          </button>
         </div>
       </div>
     );
   }
-
-  const [loading, setLoading] = useState(false);
-  const [enrichmentLoading, setEnrichmentLoading] = useState(false);
-  const [data, setData] = useState<WordData | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [searchedWord, setSearchedWord] = useState<string>('');
 
   const handleSearch = async (term: string) => {
     setLoading(true);
@@ -132,6 +138,12 @@ const App: React.FC = () => {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
         
+        {/* Maintenance Banner */}
+        <div className="mb-8 p-4 bg-yellow-900/30 text-yellow-400 rounded-2xl border-t border-yellow-500/30 border-b-4 border-yellow-900/80 flex items-center justify-center gap-3 font-bold shadow-[0_10px_30px_-10px_rgba(250,204,21,0.2)] backdrop-blur-md">
+          <TriangleAlert className="w-5 h-5" />
+          <p>The website is currently under maintenance, so some results may be inaccurate.</p>
+        </div>
+
         {/* Search Section */}
         <div className="text-center mb-12 relative">
            {/* Decorative blobs */}
