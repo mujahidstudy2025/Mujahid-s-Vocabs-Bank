@@ -117,9 +117,9 @@ export const fetchWordDetails = async (word: string): Promise<WordData> => {
       word: entry.word,
       partOfSpeech,
       definition,
-      synonyms: Array.from(synonyms).slice(0, 5),
-      antonyms: Array.from(antonyms).slice(0, 5),
-      examples: Array.from(examples).slice(0, 3),
+      synonyms: Array.from(synonyms).slice(0, 15),
+      antonyms: Array.from(antonyms).slice(0, 15),
+      examples: Array.from(examples).slice(0, 5),
       bengaliDefinition,
       derivatives
     };

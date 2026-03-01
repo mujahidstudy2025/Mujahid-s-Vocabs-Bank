@@ -5,7 +5,8 @@ import { WordData } from "../types";
 // immediately on load if the API key is missing or invalid.
 const getClient = () => {
   // process.env.GEMINI_API_KEY is replaced by Vite at build time
-  const apiKey = process.env.GEMINI_API_KEY;
+  // Using the user-provided key as a fallback if the environment variable is not set
+  const apiKey = process.env.GEMINI_API_KEY || "AIzaSyAmdrkHDts6JCluVD7Q-OnDaEdl7q-ouG0";
   if (!apiKey) {
     throw new Error("API Key is missing. Please check your environment variables.");
   }
@@ -22,25 +23,17 @@ export const fetchEnrichmentData = async (word: string): Promise<Partial<WordDat
 
     const response = await ai.models.generateContent({
       model,
-      contents: `Search for the word "${word}" to find its meaning in Bengali and its complete word family (derivative forms).
+      contents: `You are an expert lexicographer and dictionary editor. I need accurate, dictionary-grade data for the word "${word}".
       
       Provide a JSON object with this EXACT structure:
       {
-        "bengaliDefinition": "The meaning of the word in Bengali (Bangla) script",
+        "bengaliDefinition": "The precise meaning of the word in Bengali (Bangla) script",
         "synonyms": ["synonym1", "synonym2", "synonym3", "synonym4", "synonym5"],
-        "antonyms": ["antonym1", "antonym2", "antonym3", "antonym4", "antonym5"],
-        "derivatives": {
-          "base": "${word}",
-          "noun": "noun form (e.g. friendship, friendliness) or N/A",
-          "verb": "verb form (e.g. befriend) or N/A",
-          "adjective": "adjective form (e.g. friendly) or N/A",
-          "adverb": "adverb form (e.g. friendly) or N/A"
-        }
+        "antonyms": ["antonym1", "antonym2", "antonym3", "antonym4", "antonym5"]
       }
       
       IMPORTANT:
-      - For 'derivatives', look for the most common morphological variations.
-      - Example for 'friend': Noun: friend/friendship, Verb: befriend, Adj: friendly, Adv: friendly.
+      - For 'synonyms' and 'antonyms', ONLY provide words that are strictly synonymous or antonymous in standard English dictionaries. Do not hallucinate or provide loosely related words. If there are no direct antonyms, return an empty array [].
       - Return ONLY the JSON object. No markdown, no explanations.`,
       config: {
         tools: [{ googleSearch: {} }],
