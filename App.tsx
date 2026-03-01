@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, BrainCircuit } from 'lucide-react';
+import { Sparkles, BrainCircuit, TriangleAlert } from 'lucide-react';
 import SearchInput from './components/SearchInput';
 import WordDisplay from './components/WordDisplay';
 import SynonymsAntonyms from './components/SynonymsAntonyms';
@@ -9,6 +9,32 @@ import { fetchEnrichmentData } from './services/gemini';
 import { WordData } from './types';
 
 const App: React.FC = () => {
+  const IS_MAINTENANCE = true;
+
+  if (IS_MAINTENANCE) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
+        {/* Decorative blobs */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-yellow-500/10 rounded-full blur-3xl -z-10 animate-pulse"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-orange-500/10 rounded-full blur-3xl -z-10 translate-x-10 -translate-y-10"></div>
+
+        <div className="glass-card rounded-3xl p-8 md:p-16 max-w-2xl w-full text-center shadow-3d border-t border-white/10 border-b-4 border-slate-900 relative z-10 transform transition-all hover:scale-[1.02] duration-500">
+          <div className="inline-flex items-center justify-center w-32 h-32 rounded-3xl bg-slate-800/80 border-t border-slate-600/50 border-b-8 border-slate-900 mb-8 shadow-[0_20px_40px_-10px_rgba(0,0,0,0.8)] transform rotate-3 hover:rotate-6 hover:-translate-y-2 transition-all duration-500 backdrop-blur-md animate-float-3d">
+            <TriangleAlert className="w-16 h-16 text-yellow-400 drop-shadow-[0_0_15px_rgba(250,204,21,0.6)]" />
+          </div>
+          
+          <h1 className="text-4xl md:text-5xl font-black text-white mb-6 tracking-tight drop-shadow-[0_5px_15px_rgba(0,0,0,0.5)]">
+            Under <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">Maintenance</span>
+          </h1>
+          
+          <p className="text-slate-300 text-lg md:text-xl font-medium leading-relaxed drop-shadow-md p-6 bg-slate-900/40 rounded-2xl shadow-inner-3d border border-slate-700/50">
+            The website is currently under maintenance, so some results may be inaccurate.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   const [loading, setLoading] = useState(false);
   const [enrichmentLoading, setEnrichmentLoading] = useState(false);
   const [data, setData] = useState<WordData | null>(null);
